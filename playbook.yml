@@ -1,0 +1,50 @@
+---
+- name: Install and configure Mullvad with Wireguard on UniFi USG 3
+  hosts: usg
+  gather_facts: false
+
+  tasks:
+
+    - name: Check if Wireguard is installed
+      stat:
+        path: '/usr/bin/wg'
+      register: wireguard_installed_state
+
+    - when: not wireguard_installed_state.stat.exists
+      block:
+
+      # For now this is a specific version, but it could be cool to get the latest version always in future (once 'real' releases are made)
+      - name: Download desired version of Wireguard for USG3
+        get_url:
+          url: "https://github.com/Lochnair/vyatta-wireguard/releases/download/{{ wireguard_version }}/wireguard-ugw3-{{ wireguard_version }}.deb"
+          dest: '/tmp'
+        register: wireguard_download
+
+      # Gotta use a shell for installing this, since we don't have apt on a USG
+      - name: Install Wireguard on USG
+        shell: "dpkg -i {{ wireguard_download.dest }}"
+        args:
+          warn: no
+        become: true
+
+      - name: Cleanup installer file
+        file:
+          path: "{{ wireguard_download.dest }}"
+          state: absent
+
+    # This needs to be run on the local machine, since that is where my controller is
+    - name: Template out gateway.config.json
+      template:
+        src: config.gateway.json.j2
+        dest: "{{ usg_controller_location }}/config.gateway.json"
+      delegate_to: localhost
+      notify: restart usg
+
+  handlers:
+
+    # I wasn't able to find a simpler way of provisioning the USG without
+    # sending an API call (and having to look after more credentials), so a
+    # reboot is what we have
+    - name: restart usg
+      reboot:
+      become: true

@@ -1,0 +1,17 @@
+---
+# Since I run my controller on my Windows PC for now, this is something like:
+# /mnt/c/Users/<Username>/Ubiquiti UniFi/data/sites/default
+usg_controller_location: ''
+
+# Specify the desired version for USG3
+wireguard_version: 0.0.20191219-2
+
+wireguard_config: {}
+# This should look like:
+# wireguard_config:
+#     name: 'Local_network_group_name'
+#     network: '192.168.1.0/24'
+#     address: '123.456.789.0/32'
+#     endpoint: '987.654.321.0:51820'
+#     public_key: 'abc123public'
+#     private_key: 'abc123private'

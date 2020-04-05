@@ -1,0 +1,85 @@
+{
+  "firewall": {
+    "group": {
+      "network-group": {
+        "{{ wireguard_config.name }}": {
+          "network": [
+            "{{ wireguard_config.network }}"
+          ]
+        }
+      }
+    },
+    "modify": {
+      "VPN_ROUTE": {
+        "rule": {
+          "10": {
+            "action": "modify",
+            "modify": {
+              "table": "1"
+            },
+            "source": {
+              "group": {
+                "network-group": "{{ wireguard_config.name }}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "source-validation": "disable"
+  },
+  "interfaces": {
+    "ethernet": {
+      "eth1": {
+        "firewall": {
+          "in": {
+            "modify": "VPN_ROUTE"
+          }
+        }
+      }
+    },
+    "wireguard": {
+      "wg0": {
+        "address": [
+          "{{ wireguard_config.address }}"
+        ],
+        "mtu": "1420",
+        "peer": {
+          "{{ wireguard_config.public_key }}": {
+            "allowed-ips": [
+              "0.0.0.0/0"
+            ],
+            "endpoint": "{{ wireguard_config.endpoint }}"
+          }
+        },
+        "private-key": "{{ wireguard_config.private_key }}",
+        "route-allowed-ips": "false"
+      }
+    }
+  },
+  "protocols": {
+    "static": {
+      "table": {
+        "1": {
+          "interface-route": {
+            "0.0.0.0/0": {
+              "next-hop-interface": {
+                "wg0": "''"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "service": {
+    "nat": {
+      "rule": {
+        "5000": {
+          "outbound-interface": "wg0",
+          "type": "masquerade"
+        }
+      }
+    }
+  }
+}
