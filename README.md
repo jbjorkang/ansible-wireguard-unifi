@@ -1,5 +1,7 @@
 # ansible-wireguard-unifi
 
+### Use with caution, not updated for a long time (I don't use this anymore)
+
 Install Wireguard for UniFi USG3, and configure to use as a client for Mullvad.
 
 This is specific to my use case, and sends every bit of traffic on my 192.168.1.0/24 network through Mullvad, documenting here for future reference.
